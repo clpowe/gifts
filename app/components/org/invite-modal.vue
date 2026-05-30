@@ -42,3 +42,45 @@ async function submit() {
     }
 }
 </script>
+
+<template>
+    <button type="button" @click="open">Invite member</button>
+    <dialog ref="dialog">
+        <form @submit.prevent="submit">
+            <h2>Invite a family member</h2>
+            <p>They'll get an email with a link to join.</p>
+
+            <div>
+                <label for="invite-email">Email</label>
+                <br />
+                <input
+                    id="invite-email"
+                    v-model="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    required
+                />
+            </div>
+
+            <div>
+                <label for="invite-role">Role</label>
+                <br />
+                <select id="invite-role" v-model="role">
+                    <option value="member">Member</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <p v-if="error">
+                <strong>{{ error }}</strong>
+            </p>
+
+            <div>
+                <button type="button" @click="close">Cancel</button>
+                <button type="submit" :disabled="submitting">
+                    {{ submitting ? "Sending..." : "Send invite" }}
+                </button>
+            </div>
+        </form>
+    </dialog>
+</template>
