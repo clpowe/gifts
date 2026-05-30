@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1779904299649,
+      "tag": "0000_faithful_triathlon",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1779968107138,
+      "tag": "0001_real_electro",
+      "breakpoints": true
+    }
+  ]
+}

@@ -12,7 +12,12 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ["@nuxthub/core", "@vueuse/nuxt", "nitro-cloudflare-dev"],
+  modules: [
+    "@nuxthub/core",
+    "@vueuse/nuxt",
+    "nitro-cloudflare-dev",
+    "@pinia/nuxt",
+  ],
   hub: {
     db: "sqlite",
   },
