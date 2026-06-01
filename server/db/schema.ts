@@ -221,8 +221,13 @@ export const birthday = sqliteTable("birthday", {
   interests: text("interests").notNull().default("[]"), // JSON string[]
   notes: text("notes"),
   savedGifts: text("saved_gifts").notNull().default("[]"), // JSON string[]
-  createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull(),
 });
 
 export const calendarSync = sqliteTable("calendar_sync", {
@@ -234,7 +239,9 @@ export const calendarSync = sqliteTable("calendar_sync", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   calendarEventId: text("calendar_event_id").notNull(),
-  syncedAt: text("synced_at").notNull(),
+  syncedAt: integer("synced_at", { mode: "timestamp_ms" })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
 });
 
 // Birthday relations
