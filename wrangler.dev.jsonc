@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "gifts",
+  "compatibility_date": "2026-05-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "family_gifts",
+      "database_id": "ba98e90d-11f1-495c-bd5d-7ca8fcd59f16",
+      "migrations_dir": "server/db/migrations/sqlite"
+    }
+  ]
+}

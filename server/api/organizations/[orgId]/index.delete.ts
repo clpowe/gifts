@@ -1,7 +1,14 @@
 import { requireOrgMember } from "~~/server/utils/auth";
+import { eq } from "drizzle-orm";
+import {
+  invitation,
+  member,
+  organization,
+  session,
+} from "~~/server/db/schema";
+import { useDB } from "~~/server/utils/db";
 
 export default defineEventHandler(async (event) => {
-  const auth = useAuth(event);
   const orgId = getRouterParam(event, "orgId")!;
   const { membership } = await requireOrgMember(event, orgId);
 
@@ -12,10 +19,15 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  await auth.api.deleteOrganization({
-    body: { organizationId: orgId },
-    headers: event.headers,
-  });
+  const db = useDB();
+
+  await db
+    .update(session)
+    .set({ activeOrganizationId: null })
+    .where(eq(session.activeOrganizationId, orgId));
+  await db.delete(invitation).where(eq(invitation.organizationId, orgId));
+  await db.delete(member).where(eq(member.organizationId, orgId));
+  await db.delete(organization).where(eq(organization.id, orgId));
 
   return { ok: true };
 });

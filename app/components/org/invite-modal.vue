@@ -12,7 +12,7 @@ const orgs = useOrganizationStore();
 const dialog = ref<HTMLDialogElement | null>(null);
 
 const email = ref("");
-const role = ref<"member" | "owner">("member");
+const role = ref<"member" | "admin">("member");
 const submitting = ref(false);
 const error = ref<string | null>(null);
 

@@ -31,31 +31,23 @@ export interface GiftGenerationResponse {
   summary: string;
 }
 
-export const FAMILIAR_RELATIONS = [
-  "Spouse/Partner",
-  "Mother",
-  "Father",
-  "Daughter",
-  "Son",
-  "Sister",
-  "Brother",
-  "Grandmother",
-  "Grandfather",
-  "Aunt",
-  "Uncle",
-  "Cousin",
-  "Niece",
-  "Nephew",
-  "Friend",
-  "Other",
-];
-
-export const GIFT_VIBES = [
-  { value: "all", label: "Any Type" },
-  { value: "Practical", label: "🔧 Practical" },
-  { value: "Sentimental", label: "❤️ Sentimental" },
-  { value: "Experience", label: "🎟️ Experience" },
-  { value: "Creative", label: "🎨 Creative" },
-  { value: "Humorous", label: "😂 Fun/Humor" },
-  { value: "Premium", label: "✨ Premium/Lux" },
-];
+// Organization Types
+export type FullOrg = {
+  id: string;
+  name: string;
+  slug: string;
+  members: Array<{
+    id: string;
+    userId: string;
+    role: string;
+    user: { id: string; name: string; email: string };
+    createdAt: string;
+  }>;
+  invitations: Array<{
+    id: string;
+    email: string;
+    role: string;
+    status: string;
+    expiresAt: string;
+  }>;
+};

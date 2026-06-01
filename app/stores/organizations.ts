@@ -116,7 +116,7 @@ export const useOrganizationStore = defineStore("organizations", {
       }
     },
 
-    async invite(orgId: string, email: string, role: "owner") {
+    async invite(orgId: string, email: string, role: "member" | "admin") {
       return $fetch<{ id: string; email: string; role: string }>(
         `/api/organizations/${orgId}/invitations`,
         {

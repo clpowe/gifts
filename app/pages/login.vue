@@ -1,28 +1,32 @@
 <script setup lang="ts">
-import { signIn, signOut, useSession } from "@/lib/auth-client";
+import { authClient, signIn } from "~/lib/auth-client";
 
 definePageMeta({ layout: false });
 
-const { data: session } = await useSession(useFetch);
+const route = useRoute();
+const { data: session } = await authClient.useSession(useFetch);
 
 watchEffect(() => {
     if (session.value?.user) {
-        navigateTo("/");
+        const redirect = (route.query.redirect as string) || "/";
+        navigateTo(redirect);
     }
 });
 
 async function loginWithGoogle() {
     await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: (route.query.redirect as string) || "/",
     });
 }
 </script>
 
 <template>
-    <div>
-        <h1>Sign In</h1>
-        <p>Sign in with Google to continue.</p>
-        <button @click="loginWithGoogle">Sign In with Google</button>
-    </div>
+    <section>
+        <h1>Sign in</h1>
+        <p>Continue with your Google account.</p>
+        <button type="button" @click="loginWithGoogle">
+            Continue with Google
+        </button>
+    </section>
 </template>

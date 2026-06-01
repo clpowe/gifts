@@ -6,6 +6,9 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: "cloudflare_module",
+    cloudflareDev: {
+      configPath: "wrangler.dev.jsonc",
+    },
     cloudflare: {
       deployConfig: true,
       nodeCompat: true,
@@ -18,6 +21,11 @@ export default defineNuxtConfig({
     "nitro-cloudflare-dev",
     "@pinia/nuxt",
   ],
+  vite: {
+    optimizeDeps: {
+      include: ["better-auth/client/plugins", "better-auth/vue"],
+    },
+  },
   hub: {
     db: "sqlite",
   },

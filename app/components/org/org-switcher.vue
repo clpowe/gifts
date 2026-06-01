@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useOrganizationStore } from "@/stores/organizations";
+import { useOrganizationStore } from "~/stores/organizations";
 
 const orgs = useOrganizationStore();
 

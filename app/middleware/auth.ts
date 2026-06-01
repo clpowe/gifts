@@ -1,4 +1,4 @@
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "~/lib/auth-client";
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (to.path === "/login" || to.path.startsWith("/api/auth")) return;
