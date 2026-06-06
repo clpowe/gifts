@@ -12,7 +12,6 @@ async function onChange(e: Event) {
     const orgId = (e.target as HTMLSelectElement).value;
     if (!orgId) return;
     await orgs.setActive(orgId);
-    await reloadNuxtApp({ persistState: false });
 }
 </script>
 

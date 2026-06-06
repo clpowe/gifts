@@ -3,34 +3,24 @@ definePageMeta({
     middleware: "auth",
 });
 
-const orgs = useOrganizationStore();
+const orgsStore = useOrganizationStore();
 onMounted(async () => {
-    orgs.hydrateFromStorage();
-    if (!orgs.initialized) await orgs.fetchAll();
+    orgsStore.hydrateFromStorage();
+    if (!orgsStore.initialized) await orgsStore.fetchAll();
 });
 </script>
 
 <template>
     <section>
-        <p v-if="!orgs.initialized">Loading...</p>
-
-        <template v-else-if="!orgs.hasOrgs">
-            <h1>Welcome</h1>
-            <p>Create a family to start tracking birthdays.</p>
-            <p>
-                <NuxtLink to="/organizations/new"
-                    >Create your first family</NuxtLink
-                >
-            </p>
-        </template>
-
-        <p v-else-if="!orgs.activeOrg">
-            Select a family from the menu above to get started.
+        <h1>Gifts</h1>
+        <p v-if="!orgsStore.hasOrgs">
+            <NuxtLink to="/organizations/new"
+                >Create your first organization</NuxtLink
+            >
+            to get started.
         </p>
-
-        <template v-else>
-            <h1>{{ orgs.activeOrg.name }}</h1>
-            <p>Dashboard coming in Step 8.</p>
-        </template>
+        <p v-else>
+            <NuxtLink to="/birthdays">View birthdays</NuxtLink>
+        </p>
     </section>
 </template>

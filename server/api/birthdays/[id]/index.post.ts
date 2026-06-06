@@ -1,16 +1,20 @@
 import { db, schema } from "@nuxthub/db";
-import { eq } from "drizzle-orm";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { requireAuth, requireOrgMember } from "~~/server/utils/auth";
 import {
   serializeBirthday,
   validateBirthdayInput,
-  type BirthdayRow,
 } from "~~/server/utils/birthday";
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event);
   const id = getRouterParam(event, "id");
+  if (!id) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: "Birthday id is required",
+    });
+  }
 
   const [existing] = await db
     .select()
@@ -40,6 +44,13 @@ export default defineEventHandler(async (event) => {
     })
     .where(eq(schema.birthday.id, id))
     .returning();
+
+  if (!updated) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: "Birthday could not be updated",
+    });
+  }
 
   return serializeBirthday(updated);
 });
