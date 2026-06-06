@@ -241,3 +241,134 @@ Owner opens org settings
   -> recipient joins org
   -> recipient sees all birthdays for that family
 ```
+
+## Build Plan
+
+### Step 1 — Cloudflare Bindings & Nuxt Config [DONE]
+
+Get the runtime wired up before anything else touches it.
+
+- [x] `wrangler.jsonc` — D1 + AI bindings
+- [x] `nuxt.config.ts` — Nitro preset, runtime config, transpile
+- [x] `server/utils/db.ts` — `useDB()` helper
+- [x] `server/utils/ai.ts` — `useAI()` helper
+- [x] Verify bindings work locally with `wrangler dev`
+
+### Step 2 — D1 Migration [DONE]
+
+Apply the schema to the database.
+
+- [x] Run `npx drizzle-kit generate`
+- [x] Apply locally: `wrangler d1 migrations apply birthday-app-db --local`
+- [x] Verify tables exist with `wrangler d1 execute birthday-app-db --local --command "SELECT name FROM sqlite_master WHERE type='table'"`
+
+### Step 3 — Auth Routes & Middleware [DONE]
+
+Wire up sign-in before any protected route exists.
+
+- [x] `server/api/auth/[...all].ts` — Better Auth handler
+- [x] `server/utils/auth.ts` — `requireAuth()`, `requireOrgMember()` helpers
+- [x] `server/plugins/auth.ts` — Nitro plugin
+- [x] `app/middleware/auth.ts` — client route guard
+- [x] `lib/auth-client.ts` — client instance with org plugin
+- [x] Test: Google sign-in flow works end to end
+
+### Step 4 — Auth Pages (UI) [DONE]
+
+Bare minimum pages to get a user signed in.
+
+- [x] `app/pages/login.vue` — Google sign-in button
+- [x] `app/pages/index.vue` — redirect logic (no org → create one, has org → dashboard)
+- [x] Basic layout with sign-out
+
+### Step 5 — Organization API Routes [DONE]
+
+Must exist before birthday routes since birthdays belong to orgs.
+
+- [x] `GET /api/organizations` — list user's orgs
+- [x] `POST /api/organizations` — create org (Better Auth handles internally, thin wrapper)
+- [x] `GET /api/organizations/[orgId]` — org detail + members
+- [x] `PATCH /api/organizations/[orgId]` — rename (owner only)
+- [x] `DELETE /api/organizations/[orgId]` — delete (owner only, cascades)
+- [x] `POST /api/organizations/[orgId]/invitations` — invite by email
+- [x] `GET /api/organizations/[orgId]/invitations` — list pending
+
+### Step 6 — Organization UI [DONE]
+
+Needed before dashboard since dashboard requires an active org.
+
+- [x] `app/pages/organizations/new.vue` — create family group form
+- [x] `app/pages/organizations/[orgId]/settings.vue` — rename, members, invite, danger zone
+- [x] `components/org/OrgSwitcher.vue` — dropdown to switch active family
+- [x] `components/org/MemberList.vue`
+- [x] `components/org/InviteModal.vue`
+- [x] `stores/organizations.ts` — Pinia store, active org persisted to localStorage
+
+### Step 7 — Birthday API Routes [DONE]
+
+Core CRUD, no AI or calendar yet.
+
+- [x] `GET /api/birthdays?orgId=` — list, sorted by upcoming
+- [x] `POST /api/birthdays` — create
+- [x] `GET /api/birthdays/[id]` — single
+- [x] `PUT /api/birthdays/[id]` — update (any member)
+- [x] `DELETE /api/birthdays/[id]` — delete (owner or createdBy)
+- [x] `server/utils/birthday.ts` — shared helpers (upcoming sort, age calc, JSON parse/serialize)
+
+### Step 8 — Birthday UI [DONE]
+
+Main app functionality.
+
+- [x] `app/pages/dashboard.vue` — birthday list for active org
+- [x] `app/pages/birthdays/new.vue` — add birthday form
+- [x] `app/pages/birthdays/[id].vue` — detail page (shell, gifts + calendar added later)
+- [x] `components/birthday/BirthdayCard.vue` — upcoming summary card
+- [x] `components/birthday/BirthdayForm.vue` — shared create/edit form
+- [x] `components/birthday/CountdownBadge.vue` — "in 12 days" pill
+- [x] `stores/birthdays.ts` — Pinia store
+- [x] `composables/useBirthdays.ts`
+
+### Step 9 — Gift Generation API
+
+AI integration, depends on birthday routes existing.
+
+- [ ] `POST /api/birthdays/[id]/gifts` — build prompt → call CF AI → return ideas
+- [ ] `server/utils/gift.ts` — `buildGiftPrompt()`, prompt logic, schema
+- [ ] Wire up `json_schema` response format correctly (from our earlier work)
+
+### Step 10 — Gift Generation UI
+
+- [ ] `components/gift/GiftGenerator.vue` — trigger button, vibe filter, loading state
+- [ ] `components/gift/GiftIdeaCard.vue` — card with vibe badge, save button
+- [ ] `components/gift/SavedGiftsList.vue` — saved gifts on detail page
+- [ ] `stores/gifts.ts` — ephemeral, clears on navigation
+- [ ] `composables/useGiftGeneration.ts`
+- [ ] Wire save gift → `PUT /api/birthdays/[id]` updating `savedGifts`
+
+### Step 11 — Google Calendar Integration
+
+- [ ] `server/utils/calendar.ts` — token refresh, create/update/delete event
+- [ ] `POST /api/birthdays/[id]/calendar` — sync
+- [ ] `DELETE /api/birthdays/[id]/calendar` — unsync
+- [ ] `components/calendar/CalendarSyncButton.vue`
+- [ ] `composables/useCalendarSync.ts`
+- [ ] Test token refresh flow (access token expiry)
+
+### Step 12 — Polish & Edge Cases
+
+- [ ] Loading skeletons on all data-fetching pages
+- [ ] Empty states (no org, no birthdays, no gifts)
+- [ ] Error handling (toast notifications)
+- [ ] Birthday today / this week highlight
+- [ ] Confirm dialogs on destructive actions (delete birthday, delete org)
+- [ ] Invite accept flow (email link → sign in → join org)
+- [ ] Mobile responsive pass
+
+### Step 13 — Deploy
+
+- [ ] `wrangler d1 migrations apply birthday-app-db --remote`
+- [ ] Set environment variables in Cloudflare dashboard
+- [ ] `wrangler pages deploy` or connect to Git for CI
+- [ ] Set Google OAuth redirect URI to production URL
+- [ ] Smoke test end to end on prod
+
