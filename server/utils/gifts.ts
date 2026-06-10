@@ -1,61 +1,88 @@
-import type { GiftVibe } from "~~/shared/utils/constants";
-import { GIFT_VIBES } from "~~/shared/utils/constants";
-import type { GiftIdea } from "~~/server/utils/birthday";
+import { z } from "zod";
+import type { BirthdayDto } from "~~/server/utils/birthday";
+import { GIFT_VIBES } from "#imports";
 
-export function buildGiftPrompt(params: {
-  name: string;
-  relation: string;
-  age: number | null;
-  interests: string[];
-  notes: string | null;
-  vibes: GiftVibe[];
-  count: number;
-}): string {
-  const { name, relation, age, interests, notes, vibes, count } = params;
+export type GiftPromptOptions = {
+  vibe?: string;
+  budget?: string;
+};
 
-  const ageStr = age ? `They are turning ${age}.` : "Age unknown.";
+export const giftIdeaSchema = z.object({
+  id: z.string().describe("kebab-case slug from title"),
+  title: z.string(),
+  description: z.string(),
+  estimatedPrice: z.string().describe('e.g. "$15 - $30", "Under $50"'),
+  vibe: z.enum(GIFT_VIBES),
+  whereToBuy: z.string(),
+});
+
+export const giftResponseSchema = z.object({
+  summary: z.string().describe("warm, concise greeting summary"),
+  giftIdeas: z.array(giftIdeaSchema).length(5),
+});
+
+export type GiftResponse = z.infer<typeof giftResponseSchema>;
+
+export const giftSystemInstruction = `
+You are a warm, helpful, and creative family gift concierge. Your suggestions should be highly inventive, realistic, and tailored. Avoid boring cliché suggestions (like standard plastic gift cards) unless they have a creative twist. Return only valid JSON matching the schema.
+`.trim();
+
+export function buildGiftPrompt(
+  birthday: BirthdayDto,
+  options: GiftPromptOptions = {},
+): string {
+  const { vibe, budget } = options;
+
   const interestsStr =
-    interests.length > 0
-      ? `Their interests include: ${interests.join(", ")}.`
-      : "No specific interests provided.";
-  const notesStr = notes ? `Additional context: ${notes}` : "";
-  const vibesStr =
-    vibes.length > 0
-      ? `Focus on these gift vibes: ${vibes.join(", ")}.`
-      : "Mix a variety of gift vibes.";
+    birthday.interests.length > 0
+      ? birthday.interests.join(", ")
+      : "general fun, surprises";
 
-  return `You are a thoughtful gift advisor. Generate ${count} unique gift ideas for the following person.
+  const ageContext =
+    birthday.includeYear && birthday.age !== null
+      ? `${birthday.name} will be turning ${birthday.age + 1} years old on their next birthday.`
+      : "Their age is not specified.";
 
-Person: ${name}
-Relation to gift-giver: ${relation}
-${ageStr}
-${interestsStr}
-${notesStr}
-${vibesStr}
+  const vibeHint =
+    vibe && vibe !== "all"
+      ? `${birthday.name}'s preferred style of gift is "${vibe}".`
+      : "Provide a diverse, high-quality mix of Practical, Sentimental, Experience, Creative, Humorous, and Premium choices.";
 
-Return ONLY a valid JSON object — no markdown fences, no preamble:
-{
-  "ideas": [
-    {
-      "id": "a short unique kebab-case slug, e.g. leather-journal",
-      "title": "Gift name",
-      "description": "1-2 sentence description of the gift",
-      "estimatedPrice": "$XX–$XX",
-      "vibe": one of: "Practical" | "Sentimental" | "Experience" | "Creative" | "Humorous" | "Premium",
-      "whereToBuy": "Where to find it, e.g. Amazon, Etsy, local bookstore"
-    }
-  ]
-}
+  const budgetHint = budget
+    ? `Target budget: ${budget}. Keep ideas within that range.`
+    : "";
 
-Rules:
-- Each idea must be concrete and specific (not "a book" but a specific genre or title)
-- Price ranges should be realistic
-- vibe must be exactly one of the allowed string values
-- Ideas should be meaningfully different from each other
-- whereToBuy should be a realistic, specific source
-- If vibes are specified, all ideas must match one of the requested vibes`;
-}
+  const notesContext = birthday.notes
+    ? `Extra context/details: "${birthday.notes}".`
+    : "";
 
-export interface GiftGenerationResult {
-  ideas: GiftIdea[];
+  const savedTitles = birthday.savedGifts.map((g) => g.title).filter(Boolean);
+  const avoidLine =
+    savedTitles.length > 0
+      ? `Avoid repeating any of these previously saved ideas: ${savedTitles.join("; ")}.`
+      : "";
+
+  return `
+You are a highly creative professional gift planner. I need curated, personalized gift ideas for my family member.
+
+Family Member Details:
+- Name: ${birthday.name}
+- Relationship to me: ${birthday.relation}
+- Age context: ${ageContext}
+- Hobbies & Interests: ${interestsStr}
+- ${vibeHint}
+${budgetHint ? `- ${budgetHint}` : ""}
+${notesContext ? `- ${notesContext}` : ""}
+${avoidLine ? `- ${avoidLine}` : ""}
+
+Suggest 5 distinct and outstanding gift ideas. For each idea, provide:
+1. A short stable id (kebab-case slug derived from the title).
+2. A unique, engaging title.
+3. A vivid description of why they'll love it and how it matches their profile, including tips on wrapping or presenting it.
+4. Estimated price range (e.g. "$15 - $30", "Under $50", "Approx. $120", "Free / DIY").
+5. The best gift category/vibe (strictly one of: "Practical", "Sentimental", "Experience", "Creative", "Humorous", "Premium").
+6. Practical advice on where to find/buy or how to make it.
+
+Keep the accompanying summary warm, supportive, and conversational.
+`.trim();
 }

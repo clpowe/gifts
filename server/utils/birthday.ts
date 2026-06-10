@@ -1,20 +1,5 @@
 import { addYear, diffDays, diffYears, isBefore } from "@formkit/tempo";
 
-export type GiftIdea = {
-  id: string;
-  title: string;
-  description: string;
-  estimatedPrice: string;
-  vibe:
-    | "Practical"
-    | "Sentimental"
-    | "Experience"
-    | "Creative"
-    | "Humorous"
-    | "Premium";
-  whereToBuy: string;
-};
-
 export type BirthdayRow = {
   id: string;
   orgId: string;

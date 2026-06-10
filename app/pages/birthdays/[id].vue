@@ -68,6 +68,12 @@ async function handleDelete() {
         error.value = e?.statusMessage || "Failed to delete";
     }
 }
+
+onBeforeUnmount(() => {
+    if (birthday.value) {
+        useGiftsStore().clear(birthday.value.id);
+    }
+});
 </script>
 
 <template>
@@ -102,6 +108,12 @@ async function handleDelete() {
                 <pre>{{ birthday.notes }}</pre>
             </section>
 
+            <GiftSavedGiftsList
+                :birthday-id="birthday.id"
+                :gifts="birthday.savedGifts"
+            />
+
+            <GiftGenerator :birthday-id="birthday.id" />
             <p>
                 <button type="button" @click="editing = true">Edit</button>
                 <button type="button" @click="handleDelete">Delete</button>

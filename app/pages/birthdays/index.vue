@@ -11,11 +11,13 @@ await orgsStore.fetchAll();
 watch(
     () => orgsStore.activeOrgId,
     async (newId, oldId) => {
+        if (!newId) return;
         if (newId && newId !== oldId) {
             birthdaysStore.reset();
             await birthdaysStore.fetchForOrg(newId);
         }
     },
+    { immediate: true },
 );
 </script>
 
@@ -45,7 +47,7 @@ watch(
         </p>
 
         <ul v-else>
-            <BirthdayItem
+            <BirthdayListItem
                 v-for="b in birthdaysStore.upcoming"
                 :key="b.id"
                 :birthday="b"

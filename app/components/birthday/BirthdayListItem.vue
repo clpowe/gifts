@@ -32,6 +32,7 @@ const turning = computed(() => {
         <NuxtLink :to="`/birthdays/${birthday.id}`">
             <strong>{{ birthday.name }}</strong> — {{ birthday.relation }}
         </NuxtLink>
+        {{ birthday.id }}
         <br />
         {{ dateLabel }} — {{ daysLabel }}
         <template v-if="birthday.includeYear && turning !== null">

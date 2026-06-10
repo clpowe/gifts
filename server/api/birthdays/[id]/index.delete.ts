@@ -1,5 +1,5 @@
 import { db, schema } from "@nuxthub/db";
-import { eq } from "drizzle-orm";
+import { eq } from "drizzle-orm/sql";
 import { requireOrgMember } from "~~/server/utils/auth";
 
 export default defineEventHandler(async (event) => {

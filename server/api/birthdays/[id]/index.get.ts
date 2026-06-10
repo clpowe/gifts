@@ -1,5 +1,5 @@
 import { db, schema } from "@nuxthub/db";
-import { eq } from "drizzle-orm";
+import { eq } from "drizzle-orm/sql";
 import { requireAuth, requireOrgMember } from "~~/server/utils/auth";
 import { serializeBirthday } from "~~/server/utils/birthday";
 

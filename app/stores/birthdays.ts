@@ -78,7 +78,7 @@ export const useBirthdaysStore = defineStore("birthdays", {
 
     async update(id: string, payload: BirthdayPayload) {
       const updated = await $fetch<BirthdayDto>(`/api/birthdays/${id}`, {
-        method: "POST",
+        method: "PUT",
         body: payload,
       });
       this.list = this.list
