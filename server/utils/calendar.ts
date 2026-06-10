@@ -1,5 +1,6 @@
 import { db, schema } from "@nuxthub/db";
 import { and, eq } from "drizzle-orm";
+import { addDay } from "@formkit/tempo";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const CALENDAR_API =
@@ -70,4 +71,68 @@ export async function getGoogleAccessToken(userId: string): Promise<string> {
   });
 
   return data.access_token;
+}
+
+function addDays(ymd: string, days: number): string {
+  return addDay(new Date(`${ymd}T00:00:00Z`), days)
+    .toISOString()
+    .slice(0, 10);
+}
+
+export async function createBirthdayEvent(
+  accessToken: string,
+  opts: { name: string; startDate: string },
+): Promise<string> {
+  const res = await fetch(CALENDAR_API, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      summary: `🎂 ${opts.name}'s birthday`,
+      start: { date: opts.startDate },
+      end: { date: addDays(opts.startDate, 1) },
+      recurrence: ["RRULE:FREQ=YEARLY"],
+      reminders: {
+        useDefault: false,
+        overrides: [
+          { method: "popup", minutes: 60 * 24 * 7 }, // 1 week before
+          { method: "popup", minutes: 60 * 9 }, // 9am day of
+        ],
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    console.error("Calendar event create failed:", res.status, detail);
+    throw createError({
+      statusCode: 502,
+      statusMessage: "Failed to create calendar event",
+    });
+  }
+
+  const event = (await res.json()) as { id: string };
+  return event.id;
+}
+
+export async function deleteCalendarEvent(
+  accessToken: string,
+  eventId: string,
+): Promise<void> {
+  const res = await fetch(`${CALENDAR_API}/${encodeURIComponent(eventId)}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  // 404/410 = already gone; treat as success
+  if (!res.ok && res.status !== 404 && res.status !== 410) {
+    const detail = await res.text().catch(() => "");
+    console.error("Calendar event delete failed:", res.status, detail);
+    throw createError({
+      statusCode: 502,
+      statusMessage: "Failed to delete calendar event",
+    });
+  }
 }
