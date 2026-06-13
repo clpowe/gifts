@@ -7,6 +7,13 @@ export type GiftIdea = {
   estimatedPrice: string;
   vibe: GiftVibe;
   whereToBuy: string;
+  searchQuery: string;
+  productUrl: string | null;
+  // Phase 2 (PA-API)
+  asin?: string;
+  productTitle?: string;
+  productPrice?: string;
+  productImage?: string;
 };
 
 export type GiftResponse = {

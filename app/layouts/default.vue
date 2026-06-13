@@ -27,5 +27,7 @@ async function handleSignOut() {
         <main>
             <slot />
         </main>
+        <AppToasts />
+        <AppConfirmDialog />
     </div>
 </template>

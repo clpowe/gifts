@@ -58,14 +58,24 @@ async function handleUpdate(payload: any) {
     }
 }
 
+const { success, error: toastError } = useToasts();
+const { confirm } = useConfirm();
+
 async function handleDelete() {
     if (!birthday.value) return;
-    if (!confirm(`Delete ${birthday.value.name}'s birthday?`)) return;
+    const ok = await confirm({
+        title: "Delete birthday",
+        message: `Delete ${birthday.value.name}'s birthday?`,
+        confirmLabel: "Delete",
+        danger: true,
+    });
+    if (!ok) return;
     try {
         await birthdaysStore.remove(birthday.value.id);
+        success("Birthday deleted");
         await router.push("/birthdays");
     } catch (e: any) {
-        error.value = e?.statusMessage || "Failed to delete";
+        toastError(e?.statusMessage || "Failed to delete");
     }
 }
 
@@ -95,7 +105,7 @@ onBeforeUnmount(() => {
             <p v-if="birthday.includeYear && turning !== null">
                 Turning {{ turning }}
             </p>
-
+            <CalendarSyncButton :birthday-id="birthday.id" />
             <section v-if="birthday.interests.length">
                 <h2>Interests</h2>
                 <ul>
@@ -141,7 +151,7 @@ onBeforeUnmount(() => {
     </section>
 
     <section v-else>
-        <p v-if="birthdaysStore.loadingOrgId">Loading…</p>
+        <AppSkeleton v-if="birthdaysStore.loadingOrgId" :lines="6" />
         <template v-else>
             <p>Birthday not found.</p>
             <p><NuxtLink to="/birthdays">Back to list</NuxtLink></p>

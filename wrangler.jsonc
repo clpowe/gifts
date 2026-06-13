@@ -7,7 +7,10 @@
   },
   "upload_source_maps": true,
   "compatibility_flags": ["nodejs_compat"],
-  "ai": { "binding": "AI", "remote": true },
+  "ai": {
+    "binding": "AI",
+    "remote": true,
+  },
   "d1_databases": [
     {
       "binding": "DB",

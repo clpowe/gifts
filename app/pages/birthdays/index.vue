@@ -35,7 +35,7 @@ watch(
             first.
         </div>
 
-        <p v-else-if="birthdaysStore.loadingOrgId">Loading...</p>
+        <AppSkeleton v-else-if="birthdaysStore.loadingOrgId" :lines="5" />
 
         <p v-else-if="birthdaysStore.error" role="alert">
             {{ birthdaysStore.error }}

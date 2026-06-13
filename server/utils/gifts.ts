@@ -14,6 +14,11 @@ export const giftIdeaSchema = z.object({
   estimatedPrice: z.string().describe('e.g. "$15 - $30", "Under $50"'),
   vibe: z.enum(GIFT_VIBES),
   whereToBuy: z.string(),
+  searchQuery: z
+    .string()
+    .describe(
+      'Concise Amazon search terms for a physical product, e.g. "pour over coffee kit". Empty string "" for experiences, DIY, or anything not buyable on Amazon.',
+    ),
 });
 
 export const giftResponseSchema = z.object({
@@ -82,6 +87,7 @@ Suggest 5 distinct and outstanding gift ideas. For each idea, provide:
 4. Estimated price range (e.g. "$15 - $30", "Under $50", "Approx. $120", "Free / DIY").
 5. The best gift category/vibe (strictly one of: "Practical", "Sentimental", "Experience", "Creative", "Humorous", "Premium").
 6. Practical advice on where to find/buy or how to make it.
+7. A concise Amazon search query (2-5 words) for the physical product, e.g. "merino wool socks" or "beginner watercolor set". If the gift is an experience, a DIY, or otherwise not a buyable product, set searchQuery to an empty string "".
 
 Keep the accompanying summary warm, supportive, and conversational.
 `.trim();

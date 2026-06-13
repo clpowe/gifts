@@ -1,6 +1,6 @@
 import { db, schema } from "@nuxthub/db";
 import { eq } from "drizzle-orm/sql";
-import { generateObject } from "ai";
+import { generateObject, generateText, Output } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { requireAuth, requireOrgMember } from "~~/server/utils/auth";
 import { serializeBirthday } from "~~/server/utils/birthday";
@@ -9,6 +9,7 @@ import {
   giftResponseSchema,
   giftSystemInstruction,
 } from "~~/server/utils/gifts";
+import { attachProductLinks } from "~~/server/utils/amazon";
 
 export default defineEventHandler(async (event) => {
   await requireAuth(event);
@@ -54,14 +55,21 @@ export default defineEventHandler(async (event) => {
   const openai = createOpenAI({ apiKey: config.openaiApiKey });
 
   try {
-    const result = await generateObject({
+    const result = await generateText({
       model: openai("gpt-4o-mini"),
-      schema: giftResponseSchema,
+      output: Output.object({ schema: giftResponseSchema }),
       system: giftSystemInstruction,
       prompt,
     });
 
-    return result.object;
+    const giftIdeas = await attachProductLinks(result.output.giftIdeas, {
+      tag: config.amazonAssociateTag || undefined,
+    });
+
+    return {
+      summary: result.output.summary,
+      giftIdeas,
+    };
   } catch (error) {
     console.error("Gift generation error:", error);
     throw createError({

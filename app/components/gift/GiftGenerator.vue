@@ -72,9 +72,11 @@ async function onSave(idea: any) {
                 Clear
             </button>
         </div>
-
+        <p v-if="!loading && !result.ideas.length && !error">
+            No ideas yet. Pick a vibe and hit Generate.
+        </p>
         <p v-if="error" role="alert">{{ error }}</p>
-
+        <AppSkeleton v-if="loading" :lines="8" />
         <p v-if="result?.summary">{{ result.summary }}</p>
 
         <ul v-if="result.ideas.length">

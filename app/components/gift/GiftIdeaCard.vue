@@ -27,6 +27,15 @@ function onSave() {
         <p><strong>Price:</strong> {{ idea.estimatedPrice }}</p>
         <p><strong>Where:</strong> {{ idea.whereToBuy }}</p>
 
+        <p v-if="idea.productUrl">
+            <a
+                :href="idea.productUrl"
+                target="_blank"
+                rel="noopener noreferrer nofollow sponsored"
+            >
+                🛒 Find on Amazon
+            </a>
+        </p>
         <button type="button" :disabled="saved" @click="onSave">
             {{ saved ? "Saved" : "Save" }}
         </button>

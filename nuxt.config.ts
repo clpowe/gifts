@@ -31,6 +31,7 @@ export default defineNuxtConfig({
     db: "sqlite",
   },
   runtimeConfig: {
+    amazonAssociateTag: "",
     openaiApiKey: "",
     geminiApiKey: "",
   },

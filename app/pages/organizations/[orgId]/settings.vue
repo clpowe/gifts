@@ -67,11 +67,19 @@ async function remove() {
         deleting.value = false;
     }
 }
+
+const { toast } = useToasts();
+
+async function copyInviteLink(invitationId: string) {
+    const url = `${window.location.origin}/invitations/${invitationId}`;
+    await navigator.clipboard.writeText(url);
+    toast("Invite link copied");
+}
 </script>
 
 <template>
     <section>
-        <p v-if="pending">Loading...</p>
+        <AppSkeleton v-if="pending" :lines="6" />
         <p v-else-if="loadError">
             <strong>Failed to load:</strong>
             {{ loadError.statusMessage ?? loadError.message }}
@@ -127,6 +135,9 @@ async function remove() {
                         {{ inv.email }} — <em>{{ inv.role }}</em> —
                         {{ inv.status }} — expires
                         {{ new Date(inv.expiresAt).toLocaleDateString() }}
+                        <button type="button" @click="copyInviteLink(inv.id)">
+                            Copy invite link
+                        </button>
                     </li>
                 </ul>
             </template>
