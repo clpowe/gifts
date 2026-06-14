@@ -14,6 +14,7 @@ async function handleSignOut() {
         <header>
             <nav>
                 <NuxtLink to="/"><strong>Gifts</strong></NuxtLink>
+                <AppSearch v-if="session?.user" />
                 <OrgSwitcher v-if="session?.user" />
                 <span v-if="session?.user">
                     {{ session.user.email }}

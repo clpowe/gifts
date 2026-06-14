@@ -1,4 +1,5 @@
 import { addYear, diffDays, diffYears, isBefore } from "@formkit/tempo";
+import { getMilestone } from "~~/shared/utils/milestones";
 
 export type BirthdayRow = {
   id: string;
@@ -26,6 +27,8 @@ export type BirthdayDto = Omit<
   nextBirthday: string;
   daysUntil: number;
   age: number | null;
+  nextAge: number | null; // ← add
+  milestone: Milestone | null; // ← add
 };
 
 export type BirthdayInput = {
@@ -94,6 +97,10 @@ export function serializeBirthday(row: BirthdayRow): BirthdayDto {
   } catch {}
 
   const next = nextBirthdayDate(row.birthDate);
+  const daysUntil = daysUntilBirthday(row.birthDate);
+  const age = row.includeYear ? calculateAge(row.birthDate) : null;
+  const nextAge = age === null ? null : daysUntil === 0 ? age : age + 1;
+
   return {
     ...row,
     interests,
@@ -101,8 +108,10 @@ export function serializeBirthday(row: BirthdayRow): BirthdayDto {
     createdAt: serializeTimestamp(row.createdAt),
     updatedAt: serializeTimestamp(row.updatedAt),
     nextBirthday: next.toISOString().slice(0, 10),
-    daysUntil: daysUntilBirthday(row.birthDate),
-    age: row.includeYear ? calculateAge(row.birthDate) : null,
+    daysUntil,
+    age,
+    nextAge,
+    milestone: getMilestone(nextAge),
   };
 }
 

@@ -10,21 +10,30 @@ export interface Birthday {
   calendarEventId?: string;
   calendarSyncedAt?: string;
 }
-
-export interface GiftIdea {
+export type Milestone = {
+  age: number;
+  label: string;
+};
+export type GiftIdea = {
   id: string;
   title: string;
   description: string;
   estimatedPrice: string;
-  vibe:
-    | "Practical"
-    | "Sentimental"
-    | "Experience"
-    | "Creative"
-    | "Humorous"
-    | "Premium";
+  vibe: GiftVibe;
   whereToBuy: string;
-}
+  searchQuery: string;
+  productUrl: string | null;
+  // Phase 2 (PA-API)
+  asin?: string;
+  productTitle?: string;
+  productPrice?: string;
+  productImage?: string;
+};
+
+export type GiftGenerationRequest = {
+  vibe?: GiftVibe | "all";
+  budget?: string;
+};
 
 export interface GiftGenerationResponse {
   giftIdeas: GiftIdea[];

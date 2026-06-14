@@ -27,7 +27,6 @@ export default defineNuxtConfig({
     },
   },
   hub: {
-    ai: true,
     db: "sqlite",
   },
   runtimeConfig: {

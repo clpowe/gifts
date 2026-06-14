@@ -105,6 +105,12 @@ onBeforeUnmount(() => {
             <p v-if="birthday.includeYear && turning !== null">
                 Turning {{ turning }}
             </p>
+
+            <div v-if="birthday.milestone" class="milestone-callout">
+                {{ birthday.milestone.label }}
+                <small>A landmark birthday — make it count.</small>
+            </div>
+
             <CalendarSyncButton :birthday-id="birthday.id" />
             <section v-if="birthday.interests.length">
                 <h2>Interests</h2>

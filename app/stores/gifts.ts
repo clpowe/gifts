@@ -1,31 +1,5 @@
 import { defineStore } from "pinia";
 
-export type GiftIdea = {
-  id: string;
-  title: string;
-  description: string;
-  estimatedPrice: string;
-  vibe: GiftVibe;
-  whereToBuy: string;
-  searchQuery: string;
-  productUrl: string | null;
-  // Phase 2 (PA-API)
-  asin?: string;
-  productTitle?: string;
-  productPrice?: string;
-  productImage?: string;
-};
-
-export type GiftResponse = {
-  summary: string;
-  giftIdeas: GiftIdea[];
-};
-
-type GenerateBody = {
-  vibe?: string;
-  budget?: string;
-};
-
 type State = {
   byBirthdayId: Record<
     string,
@@ -50,11 +24,11 @@ export const useGiftsStore = defineStore("gifts", {
   },
 
   actions: {
-    async generate(birthdayId: string, body: GenerateBody = {}) {
+    async generate(birthdayId: string, body: GiftGenerationRequest = {}) {
       this.loadingId = birthdayId;
       this.error = null;
       try {
-        const res = await $fetch<GiftResponse>(
+        const res = await $fetch<GiftGenerationResponse>(
           `/api/birthdays/${birthdayId}/gifts`,
           { method: "POST", body },
         );

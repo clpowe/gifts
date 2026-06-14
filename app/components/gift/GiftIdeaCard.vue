@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type {} from "~/stores/gifts";
-
 const props = defineProps<{
     idea: GiftIdea;
     saved?: boolean;

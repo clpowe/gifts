@@ -61,6 +61,10 @@ export function buildGiftPrompt(
     ? `Extra context/details: "${birthday.notes}".`
     : "";
 
+  const milestoneHint = birthday.milestone
+    ? `This is a MAJOR milestone birthday — ${birthday.milestone.label} Lean into the occasion: include at least one commemorative, keepsake, or once-in-a-lifetime gift worthy of this landmark age, not just everyday items.`
+    : "";
+
   const savedTitles = birthday.savedGifts.map((g) => g.title).filter(Boolean);
   const avoidLine =
     savedTitles.length > 0
@@ -78,6 +82,7 @@ Family Member Details:
 - ${vibeHint}
 ${budgetHint ? `- ${budgetHint}` : ""}
 ${notesContext ? `- ${notesContext}` : ""}
+${milestoneHint ? `- ${milestoneHint}` : ""}
 ${avoidLine ? `- ${avoidLine}` : ""}
 
 Suggest 5 distinct and outstanding gift ideas. For each idea, provide:

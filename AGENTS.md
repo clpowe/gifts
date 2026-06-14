@@ -372,3 +372,98 @@ AI integration, depends on birthday routes existing.
 - [ ] Set Google OAuth redirect URI to production URL
 - [ ] Smoke test end to end on prod
 
+
+## Future Feature — Family Tree / Relationship Graph
+
+> Status: **design only, not built.** Captures the plan for replacing the
+> hard-coded, viewer-absolute `relation` field with a derived kinship graph.
+
+### Problem
+
+`relation` is stored as one global string on the birthday, but it is
+**viewer-relative**: a birthday belongs to an org shared by many members.
+"Mom" to one member is "Wife" to another, "Grandma" to a third. A single
+field cannot be correct for everyone.
+
+### Core idea
+
+Don't store relations — store a few **primitive edges** and **derive**
+everything else per viewer. This kills the viewer-relative bug and powers a
+family-tree view from the same data.
+
+### Data model
+
+A birthday evolves into a **person** (a graph node that optionally tracks a
+birthday).
+
+```text
+person              id, orgId, name, birthDate?, gender?, interests, notes, savedGifts
+member_identity     userId -> personId        "I am this node"
+relationship_edge   fromPersonId, toPersonId, type
+```
+
+Store only primitives; everything else derives:
+
+| Primitive    | Direction | Notes                                                |
+| ------------ | --------- | ---------------------------------------------------- |
+| `parent_of`  | directed  | inverse `child_of` is derived, never stored          |
+| `spouse_of`  | symmetric | store once, normalize id order                       |
+| `sibling_of` | symmetric | or derive from shared parents (messier w/ half/step) |
+
+### Derivation engine
+
+BFS from the logged-in member's identity node; label by path pattern:
+
+```text
+parent                    -> parent
+parent -> parent          -> grandparent
+parent -> sibling         -> aunt / uncle
+parent -> sibling -> child -> cousin
+spouse -> parent          -> parent-in-law
+sibling -> child          -> niece / nephew
+```
+
+- **Depth cap** (~4 hops): beyond it, "relative", not "cousin's wife's uncle".
+- **Rank multiple paths**: blood over marriage, shortest wins.
+- **Gender** (optional `person.gender`) refines mother/father, aunt/uncle.
+  Without it, neutral labels.
+
+Viewer-relative falls out for free: same graph, different start node ->
+"Mom" for you, "Wife" for Dad. No per-pair storage.
+
+### Phased build (weeks, not hours)
+
+1. **Model + identity + manual edges.** Evolve `birthday` -> `person`, add
+   `member_identity` + `relationship_edge`. Onboarding "which person are
+   you?". UI to link two people with a primitive type. Show explicit edges
+   only — no derivation yet. Keep old `relation` string as fallback so
+   nothing breaks.
+2. **Derivation engine.** Kinship labeling from viewer node, depth-capped,
+   blood-over-marriage ranking. Derived relation replaces the dropdown on
+   cards + feeds the gift prompt. Optional gender for gendered labels.
+3. **Tree visualization.** SVG family tree, focus a person, expand branches.
+   The fun payoff.
+4. **Polish.** Step/half/adoptive edge subtypes, multiple marriages,
+   deceased link-only nodes.
+
+### Touch points / migration
+
+- **Gift prompt:** "Relationship to me" -> derived viewer relation (Phase 2).
+- **Milestones, search, calendar:** unaffected — person still has a birthday.
+- **Migration:** make an identity `person` per member from their user name;
+  convert each birthday's old `relation` string to a best-effort edge to that
+  member. Ambiguous ones ("Cousin") get flagged for manual fix. No data lost.
+
+### Hardest bits
+
+1. Edge inversion — store one direction, always derive the other (storing
+   both = sync hazard).
+2. Symmetric-edge dedupe — normalize id order on spouse/sibling.
+3. Path ranking when two relations exist (blood vs in-law).
+4. Step/half/adopt — needs edge subtypes; defer to Phase 4.
+
+### Proportionate next step
+
+Build **Phase 1 only**, behind the existing `relation` field as fallback —
+gets the schema + identity right without committing to the derivation engine
+yet. Tree comes alive in Phase 3.

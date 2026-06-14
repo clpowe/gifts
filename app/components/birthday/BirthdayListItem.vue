@@ -35,6 +35,9 @@ const turning = computed(() => {
         {{ birthday.id }}
         <br />
         {{ dateLabel }} — {{ daysLabel }}
+        <span v-if="birthday.milestone" class="milestone-badge">
+            {{ birthday.milestone.label }}
+        </span>
         <template v-if="birthday.includeYear && turning !== null">
             — turns {{ turning }}
         </template>

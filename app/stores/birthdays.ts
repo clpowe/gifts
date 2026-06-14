@@ -16,6 +16,8 @@ export type BirthdayDto = {
   nextBirthday: string;
   daysUntil: number;
   age: number | null;
+  nextAge: number | null;
+  milestone: { age: number; label: string } | null;
 };
 
 export type BirthdayPayload = {
